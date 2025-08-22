@@ -7,9 +7,13 @@ public class Dev {
     private Set<Conteudo> conteudosInscritos = new LinkedHashSet<>();
     private Set<Conteudo> conteudosConcluidos = new LinkedHashSet<>();
 
-    public void inscreverBootcamp(Bootcamp bootcamp){
-        this.conteudosInscritos.addAll(bootcamp.getConteudos());
-        bootcamp.getDevsInscritos().add(this);
+    public void inscreverBootcamp(Bootcamp bootcamp) {
+        if (!bootcamp.getDevsInscritos().contains(this)) {
+            this.conteudosInscritos.addAll(bootcamp.getConteudos());
+            bootcamp.getDevsInscritos().add(this);
+        } else {
+            System.out.println(nome + " já está inscrito no Bootcamp " + bootcamp.getNome());
+        }
     }
 
     public void progredir() {
@@ -17,24 +21,28 @@ public class Dev {
         if(conteudo.isPresent()) {
             this.conteudosConcluidos.add(conteudo.get());
             this.conteudosInscritos.remove(conteudo.get());
+            System.out.println(nome + " concluiu: " + conteudo.get().getTitulo());
         } else {
             System.err.println("Você não está matriculado em nenhum conteúdo!");
         }
     }
 
     public double calcularTotalXp() {
-        Iterator<Conteudo> iterator = this.conteudosConcluidos.iterator();
-        double soma = 0;
-        while(iterator.hasNext()){
-            double next = iterator.next().calcularXp();
-            soma += next;
-        }
-        return soma;
-
-        /*return this.conteudosConcluidos
+        return this.conteudosConcluidos
                 .stream()
                 .mapToDouble(Conteudo::calcularXp)
-                .sum();*/
+                .sum();
+    }
+
+    public boolean concluiuBootcamp(Bootcamp bootcamp) {
+        return this.conteudosConcluidos.containsAll(bootcamp.getConteudos());
+    }
+
+    public String getNivel() {
+        double xp = calcularTotalXp();
+        if (xp < 50) return "Iniciante";
+        else if (xp < 100) return "Intermediário";
+        return "Avançado";
     }
 
 
@@ -71,7 +79,14 @@ public class Dev {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(nome, conteudosInscritos, conteudosConcluidos);
+    public int hashCode() { return Objects.hash(nome); }
+
+    @Override
+    public String toString() {
+        return "Dev{" +
+                "nome='" + nome + '\'' +
+                ", nivel=" + getNivel() +
+                ", xpTotal=" + calcularTotalXp() +
+                '}';
     }
 }
